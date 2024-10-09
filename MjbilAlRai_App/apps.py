@@ -1,0 +1,8 @@
+# MjbilAlRai_App/apps.py
+
+from django.apps import AppConfig
+
+class MjbilAlRaiAppConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'MjbilAlRai_App'
+    verbose_name = "MjbilAlRai App"

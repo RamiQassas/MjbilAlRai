@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% block title %}إدخال حجز جديد - مجبل الراعي الحديث{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">إدخال حجز جديد</h1>
+
+    {% if form.errors %}
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post" class="bg-white p-4 rounded shadow-sm">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="{{ form.customer_name.id_for_label }}" class="form-label">اسم العميل</label>
+            {{ form.customer_name|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.carpenter_name.id_for_label }}" class="form-label">اسم النجار</label>
+            {{ form.carpenter_name|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.concrete_type.id_for_label }}" class="form-label">نوع الخرسانة</label>
+            {{ form.concrete_type|add_class:"form-select" }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.concrete_quantity.id_for_label }}" class="form-label">كمية الخرسانة</label>
+            {{ form.concrete_quantity|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.site_location.id_for_label }}" class="form-label">موقع الصب</label>
+            {{ form.site_location|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.estimated_distance.id_for_label }}" class="form-label">المسافة التقديرية</label>
+            {{ form.estimated_distance|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.phone_number.id_for_label }}" class="form-label">رقم الهاتف</label>
+            {{ form.phone_number|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.additional_notes.id_for_label }}" class="form-label">ملاحظات إضافية</label>
+            {{ form.additional_notes|add_class:"form-control" }}
+        </div>
+        <button type="submit" class="btn btn-primary w-100">حجز</button>
+    </form>
+</div>
+{% endblock %}

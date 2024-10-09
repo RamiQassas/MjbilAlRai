@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}الصفحة الرئيسية - مجبل الراعي الحديث{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">نظام الاستعلام عن الحجز</h1>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="bg-white p-4 rounded shadow-sm">
+                <ul class="nav nav-tabs" id="searchTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="phone-tab" data-bs-toggle="tab" data-bs-target="#phone" type="button" role="tab" aria-controls="phone" aria-selected="true">البحث برقم الهاتف</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="reservation-tab" data-bs-toggle="tab" data-bs-target="#reservation" type="button" role="tab" aria-controls="reservation" aria-selected="false">البحث برقم الحجز</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="searchTabContent">
+                    <!-- البحث برقم الهاتف -->
+                    <div class="tab-pane fade show active" id="phone" role="tabpanel" aria-labelledby="phone-tab">
+                        <form method="post" class="mt-4">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="phone_number" class="form-label">رقم الهاتف</label>
+                                <input type="text" name="phone_number" class="form-control" id="phone_number" placeholder="أدخل رقم الهاتف" pattern="\+?\d{9,15}" title="يجب أن يحتوي على 9 إلى 15 رقمًا ويمكن أن يبدأ بـ +" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">بحث</button>
+                        </form>
+                        {% if error and request.POST.phone_number %}
+                            <div class="alert alert-warning mt-3">{{ error }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- البحث برقم الحجز -->
+                    <div class="tab-pane fade" id="reservation" role="tabpanel" aria-labelledby="reservation-tab">
+                        <form method="post" class="mt-4">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="reservation_number" class="form-label">رقم الحجز</label>
+                                <input type="text" name="reservation_number" class="form-control" id="reservation_number" placeholder="أدخل رقم الحجز" maxlength="6" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">بحث</button>
+                        </form>
+                        {% if error and request.POST.reservation_number %}
+                            <div class="alert alert-warning mt-3">{{ error }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if reservations %}
+        <div class="mt-5">
+            <h2 class="text-primary">تفاصيل الحجوزات</h2>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mt-3">
+                    <thead>
+                        <tr>
+                            <th>رقم الحجز</th>
+                            <th>اسم العميل</th>
+                            <th>اسم النجار</th>
+                            <th>نوع الخرسانة</th>
+                            <th>كمية الخرسانة</th>
+                            <th>السعر للوحدة</th>
+                            <th>الخصم</th>
+                            <th>المدفوعات</th>
+                            <th>الموقع</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in reservations %}
+                            <tr>
+                                <td>{{ reservation.reservation_number }}</td>
+                                <td>{{ reservation.customer_name }}</td>
+                                <td>{{ reservation.carpenter_name }}</td>
+                                <td>{% if reservation.concrete_type %}{{ reservation.concrete_type }}{% endif %}</td>
+                                <td>{% if reservation.concrete_quantity %}{{ reservation.concrete_quantity }} متر مكعب{% endif %}</td>
+                                <td>{% if reservation.price_per_unit %}{{ reservation.price_per_unit }} دولار أمريكي{% endif %}</td>
+                                <td>{% if reservation.discount %}{{ reservation.discount }} دولار أمريكي{% endif %}</td>
+                                <td>{% if reservation.payments %}{{ reservation.payments }} دولار أمريكي{% endif %}</td>
+                                <td>{% if reservation.site_location %}{{ reservation.site_location }}{% endif %}</td>
+                                <td>
+                                    {% if reservation.status == 'مقبول' %}
+                                        <span class="badge bg-success">مقبول</span>
+                                    {% elif reservation.status == 'مرفوض' %}
+                                        <span class="badge bg-danger">مرفوض</span>
+                                    {% elif reservation.status == 'مكتمل' %}
+                                        <span class="badge bg-info text-dark">مكتمل</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">قيد الانتظار</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="alert alert-info">
+                <strong>إجمالي التكلفة الإجمالية:</strong> {{ total_gross_amount_sum }} دولار أمريكي<br>
+                <strong>إجمالي الخصومات:</strong> {{ total_discount_sum }} دولار أمريكي<br>
+                <strong>إجمالي المدفوعات:</strong> {{ total_payments_sum }} دولار أمريكي<br>
+                <strong>إجمالي الرصيد المتبقي:</strong> {{ total_remaining_sum }} دولار أمريكي
+            </div>
+            <form method="post" action="{% url 'export_customer_reservations' %}">
+                {% csrf_token %}
+                {% if request.POST.phone_number %}
+                    <input type="hidden" name="phone_number" value="{{ request.POST.phone_number }}">
+                {% elif request.POST.reservation_number %}
+                    <input type="hidden" name="reservation_number" value="{{ request.POST.reservation_number }}">
+                {% endif %}
+                <button type="submit" class="btn btn-success">تصدير إلى Excel</button>
+            </form>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

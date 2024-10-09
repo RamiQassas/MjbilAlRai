@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MjbilAlRai{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet" integrity="sha384-..." crossorigin="anonymous">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'MjbilAlRai_App/styles.css' %}">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            direction: rtl;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar-brand {
+            color: #b7972e !important;
+            font-weight: bold;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+        }
+        .navbar-brand img {
+            max-height: 60px;
+            margin-right: 10px;
+        }
+        .nav-link {
+            color: #b7972e !important;
+            font-size: 1.2rem;
+            margin-left: 20px;
+        }
+        .nav-link:hover {
+            color: #a38624 !important;
+        }
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            padding: 20px;
+            background-color: #ffffff;
+            color: #999;
+            border-top: 1px solid #e5e5e5;
+        }
+    </style>
+</head>
+<body>
+    <!-- شريط التنقل -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="{% static 'MjbilAlRai_App/logo.png' %}" alt="مجبل الراعي الحديث">
+                مجبل الراعي الحديث
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="تبديل التنقل">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'new_reservation' %}">إدخال حجز جديد</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        {% if perms.MjbilAlRai_App.can_manage_reservations %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'manage_reservations' %}">إدارة الحجوزات</a>
+                            </li>
+                        {% endif %}
+                        {% if perms.MjbilAlRai_App.can_confirm_reservations %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'confirm_reservations' %}">تأكيد الحجوزات</a>
+                            </li>
+                        {% endif %}
+                        {% if perms.MjbilAlRai_App.can_manage_accountant %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'accountant_dashboard' %}">لوحة المحاسب</a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">تسجيل الخروج</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">تسجيل دخول الموظفين</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- محتوى الصفحة -->
+    <div class="container mt-5 pt-5">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="إغلاق"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- الفوتر -->
+    <footer>
+        <p>&copy; 2024 شركة مجبل الراعي الحديث. جميع الحقوق محفوظة.</p>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-..." crossorigin="anonymous"></script>
+</body>
+</html>

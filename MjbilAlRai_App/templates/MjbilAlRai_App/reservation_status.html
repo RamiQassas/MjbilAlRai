@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}تفاصيل الحجز - مجبل الراعي الحديث{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">تفاصيل الحجز رقم: {{ reservation.reservation_number }}</h1>
+
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            معلومات الحجز
+        </div>
+        <div class="card-body">
+            <p><strong>اسم العميل:</strong> {{ reservation.customer_name }}</p>
+            <p><strong>اسم النجار:</strong> {{ reservation.carpenter_name }}</p>
+            <p><strong>نوع الخرسانة:</strong> {{ reservation.concrete_type }}</p>
+            <p><strong>كمية الخرسانة:</strong> {{ reservation.concrete_quantity }} متر مكعب</p>
+            <p><strong>موقع الصب:</strong> {{ reservation.site_location }}</p>
+            <p><strong>المسافة التقديرية:</strong> {{ reservation.estimated_distance }} كم</p>
+            <p><strong>الملاحظات:</strong> {{ reservation.additional_notes }}</p>
+            <p><strong>رقم الهاتف:</strong> {{ reservation.phone_number }}</p>
+            <p><strong>تاريخ الحجز:</strong> {{ reservation.reservation_date|date:"Y/m/d" }}</p>
+            {% if reservation.approval_date %}
+                <p><strong>تاريخ الموافقة:</strong> {{ reservation.approval_date|date:"Y/m/d" }}</p>
+            {% endif %}
+            {% if reservation.approval_message %}
+                <p><strong>رسالة الموافقة:</strong> {{ reservation.approval_message }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <a href="{% url 'home' %}" class="btn btn-primary mt-3">العودة للصفحة الرئيسية</a>
+</div>
+{% endblock %}

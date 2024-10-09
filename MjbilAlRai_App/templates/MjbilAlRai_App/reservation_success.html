@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}تم الحجز - مجبل الراعي الحديث{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="alert alert-success text-center p-5 rounded shadow-sm">
+        <h1>تم الحجز بنجاح!</h1>
+        <p>رقم حجزك هو: <strong>{{ reservation.reservation_number }}</strong></p>
+        <p>يرجى حفظ رقم الحجز وأخذ لقطة شاشة للرجوع إليه لاحقًا.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary mt-3">العودة للصفحة الرئيسية</a>
+    </div>
+</div>
+{% endblock %}

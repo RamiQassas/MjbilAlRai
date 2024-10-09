@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}حجوزاتك - مجبل الراعي الحديث{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">عرض حجوزاتي</h1>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <form method="post" class="bg-white p-4 rounded shadow-sm">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="phone_number" class="form-label">رقم الهاتف</label>
+                    <input type="text" name="phone_number" class="form-control" id="phone_number" placeholder="أدخل رقم الهاتف" pattern="\+?\d{9,15}" title="يجب أن يحتوي على 9 إلى 15 رقمًا ويمكن أن يبدأ بـ +" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">عرض الحجوزات</button>
+            </form>
+            {% if error %}
+                <div class="alert alert-warning mt-3">{{ error }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if reservations %}
+        <div class="mt-5">
+            <h2 class="text-primary">تفاصيل الحجوزات</h2>
+            <table class="table table-bordered table-hover mt-3">
+                <thead>
+                    <tr>
+                        <th>رقم الحجز</th>
+                        <th>اسم النجار</th>
+                        <th>نوع الخرسانة</th>
+                        <th>كمية الخرسانة</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reservation in reservations %}
+                        <tr>
+                            <td>{{ reservation.reservation_number }}</td>
+                            <td>{{ reservation.carpenter_name }}</td>
+                            <td>{{ reservation.concrete_type }}</td>
+                            <td>{{ reservation.concrete_quantity }} متر مكعب</td>
+                            <td>
+                                {% if reservation.status == 'مقبول' %}
+                                    <span class="badge bg-success">مقبول</span>
+                                {% elif reservation.status == 'مرفوض' %}
+                                    <span class="badge bg-danger">مرفوض</span>
+                                {% elif reservation.status == 'مكتمل' %}
+                                    <span class="badge bg-info text-dark">مكتمل</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">قيد الانتظار</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="alert alert-info">
+                <strong>إجمالي التكلفة الإجمالية:</strong> {{ total_gross_amount_sum }} دولار أمريكي<br>
+                <strong>إجمالي الخصومات:</strong> {{ total_discount_sum }} دولار أمريكي<br>
+                <strong>إجمالي المدفوعات:</strong> {{ total_payments_sum }} دولار أمريكي<br>
+                <strong>إجمالي الرصيد المتبقي:</strong> {{ total_remaining_sum }} دولار أمريكي
+            </div>
+            <form method="post" action="{% url 'export_customer_reservations' %}">
+                {% csrf_token %}
+                <input type="hidden" name="phone_number" value="{{ request.POST.phone_number }}">
+                <button type="submit" class="btn btn-success">تصدير إلى Excel</button>
+            </form>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

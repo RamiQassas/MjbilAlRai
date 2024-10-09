@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}الحجوزات العامة - مجبل الراعي الحديث{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">الحجوزات العامة</h1>
+
+    <!-- نموذج الفلترة -->
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <label for="statusFilter" class="form-label">فلترة حسب الحالة</label>
+            <select name="status" id="statusFilter" class="form-select">
+                <option value="">كل الحالات</option>
+                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>قيد الانتظار</option>
+                <option value="approved" {% if request.GET.status == 'approved' %}selected{% endif %}>مقبول</option>
+                <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>مرفوض</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="dateFilter" class="form-label">تاريخ الحجز</label>
+            <input type="date" name="reservation_date" id="dateFilter" class="form-control" value="{{ request.GET.reservation_date }}">
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">فلترة</button>
+        </div>
+    </form>
+
+    <!-- جدول الحجوزات -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>رقم الحجز</th>
+                    <th>اسم الزبون</th>
+                    <th>اسم النجار</th>
+                    <th>تاريخ الحجز</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                    <tr>
+                        <td>{{ reservation.reservation_number }}</td>
+                        <td>{{ reservation.customer_name }}</td>
+                        <td>{{ reservation.carpenter_name }}</td>
+                        <td>{{ reservation.reservation_date|date:"Y/m/d" }}</td>
+                        <td>
+                            {% if reservation.is_approved %}
+                                <span class="badge bg-success">مقبول</span>
+                            {% elif reservation.is_rejected %}
+                                <span class="badge bg-danger">مرفوض</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">قيد الانتظار</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">لا توجد حجوزات متاحة.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block title %}إدارة الحجوزات - مجبل الراعي الحديث{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">إدارة الحجوزات</h1>
+
+    <!-- نموذج الفلترة -->
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <label for="statusFilter" class="form-label">فلترة حسب الحالة</label>
+            <select name="status" id="statusFilter" class="form-select">
+                <option value="">كل الحالات</option>
+                <option value="معلق" {% if request.GET.status == 'معلق' %}selected{% endif %}>قيد الانتظار</option>
+                <option value="مقبول" {% if request.GET.status == 'مقبول' %}selected{% endif %}>مقبول</option>
+                <option value="مرفوض" {% if request.GET.status == 'مرفوض' %}selected{% endif %}>مرفوض</option>
+                <option value="مكتمل" {% if request.GET.status == 'مكتمل' %}selected{% endif %}>مكتمل</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="dateFilter" class="form-label">تاريخ الحجز</label>
+            <input type="date" name="reservation_date" id="dateFilter" class="form-control" value="{{ request.GET.reservation_date }}">
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">فلترة</button>
+        </div>
+    </form>
+
+    <!-- جدول الحجوزات -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>رقم الحجز</th>
+                    <th>اسم الزبون</th>
+                    <th>تاريخ الحجز</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                    <tr>
+                        <td>{{ reservation.reservation_number }}</td>
+                        <td>{{ reservation.customer_name }}</td>
+                        <td>{{ reservation.reservation_date|date:"Y/m/d" }}</td>
+                        <td>
+                            {% if reservation.status == 'معلق' %}
+                                <span class="badge bg-warning text-dark">قيد الانتظار</span>
+                            {% elif reservation.status == 'مقبول' %}
+                                <span class="badge bg-success">مقبول</span>
+                            {% elif reservation.status == 'مرفوض' %}
+                                <span class="badge bg-danger">مرفوض</span>
+                            {% elif reservation.status == 'مكتمل' %}
+                                <span class="badge bg-info text-dark">مكتمل</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detailsModal{{ reservation.id }}">التفاصيل</button>
+                            {% if reservation.status == 'معلق' %}
+                                <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#approveModal{{ reservation.id }}">قبول</button>
+                                <a href="{% url 'reject_reservation' reservation.id %}" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من رفض هذا الحجز؟');">رفض</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    <!-- مودال تفاصيل الحجز -->
+                    <div class="modal fade" id="detailsModal{{ reservation.id }}" tabindex="-1" aria-labelledby="detailsModalLabel{{ reservation.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="detailsModalLabel{{ reservation.id }}">تفاصيل الحجز</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p><strong>اسم العميل:</strong> {{ reservation.customer_name }}</p>
+                                    <p><strong>اسم النجار:</strong> {{ reservation.carpenter_name }}</p>
+                                    <p><strong>نوع الخرسانة:</strong> {{ reservation.concrete_type }}</p>
+                                    <p><strong>كمية الخرسانة:</strong> {{ reservation.concrete_quantity }} متر مكعب</p>
+                                    <p><strong>الموقع:</strong> {{ reservation.site_location }}</p>
+                                    <p><strong>المسافة التقديرية:</strong> {{ reservation.estimated_distance }} كم</p>
+                                    <p><strong>ملاحظات إضافية:</strong> {{ reservation.additional_notes }}</p>
+                                    <p><strong>رقم الهاتف:</strong> {{ reservation.phone_number }}</p>
+                                    <p><strong>تاريخ الموافقة:</strong> {{ reservation.approval_date|date:"Y/m/d" }}</p>
+                                    <p><strong>رسالة الموافقة:</strong> {{ reservation.approval_message }}</p>
+                                    <p><strong>اكتمال الحجز:</strong> {% if reservation.is_completed %}نعم{% else %}لا{% endif %}</p>
+                                    {% if reservation.completion_date %}
+                                        <p><strong>تاريخ اكتمال الحجز:</strong> {{ reservation.completion_date|date:"Y/m/d" }}</p>
+                                    {% endif %}
+                                    <p><strong>الحالة الحالية:</strong> {{ reservation.status }}</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- مودال قبول الحجز -->
+                    <div class="modal fade" id="approveModal{{ reservation.id }}" tabindex="-1" aria-labelledby="approveModalLabel{{ reservation.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{% url 'approve_reservation' reservation.id %}" method="post">
+                                    {% csrf_token %}
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="approveModalLabel{{ reservation.id }}">قبول الحجز</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="approvalDate{{ reservation.id }}" class="form-label">تاريخ القبول</label>
+                                            <input type="date" class="form-control" id="approvalDate{{ reservation.id }}" name="approval_date" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="approvalMessage{{ reservation.id }}" class="form-label">رسالة القبول (اختياري)</label>
+                                            <textarea class="form-control" id="approvalMessage{{ reservation.id }}" name="approval_message" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                        <button type="submit" class="btn btn-success">قبول الحجز</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">لا توجد حجوزات متاحة.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

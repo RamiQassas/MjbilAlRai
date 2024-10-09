@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}التفاصيل المالية - مجبل الراعي الحديث{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">التفاصيل المالية للحجز رقم: {{ reservation.reservation_number }}</h1>
+
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            المعلومات المالية
+        </div>
+        <div class="card-body">
+            <p><strong>السعر للوحدة:</strong> {{ reservation.price_per_unit }} دولار أمريكي</p>
+            <p><strong>الخصم:</strong> {{ reservation.discount }} دولار أمريكي</p>
+            <p><strong>مجموع الدفعات المدفوعة:</strong> {{ reservation.payments }} دولار أمريكي</p>
+            <p><strong>المبلغ المتبقي:</strong> {{ reservation.remaining_balance }} دولار أمريكي</p>
+            <p><strong>ملاحظات المحاسب:</strong> {{ reservation.accountant_notes }}</p>
+            <p><strong>اكتمال الحجز:</strong> {% if reservation.is_completed %}نعم{% else %}لا{% endif %}</p>
+            {% if reservation.completion_date %}
+                <p><strong>تاريخ اكتمال الحجز:</strong> {{ reservation.completion_date|date:"Y/m/d" }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <a href="{% url 'update_financial_details' reservation.id %}" class="btn btn-primary">تحديث البيانات المالية</a>
+</div>
+{% endblock %}

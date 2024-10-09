@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}لوحة المحاسب - مجبل الراعي الحديث{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">لوحة المحاسب</h1>
+
+    <!-- نموذج الفلتر حسب الحالة المالية -->
+    <form method="get" class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <label for="financial_status" class="form-label">فلترة حسب الحالة المالية:</label>
+                <select name="financial_status" id="financial_status" class="form-select">
+                    <option value="">جميع الحالات</option>
+                    <option value="remaining" {% if financial_status == 'remaining' %}selected{% endif %}>متبقي</option>
+                    <option value="paid" {% if financial_status == 'paid' %}selected{% endif %}>مدفوع بالكامل</option>
+                    <option value="pending" {% if financial_status == 'pending' %}selected{% endif %}>جاري انتظار</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">تطبيق الفلتر</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- جدول الحجوزات المكتملة -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>رقم الحجز</th>
+                    <th>اسم العميل</th>
+                    <th>اسم النجار</th>
+                    <th>نوع الخرسانة</th>
+                    <th>كمية الخرسانة</th>
+                    <th>السعر للوحدة</th>
+                    <th>الخصم</th>
+                    <th>المدفوعات</th>
+                    <th>الحالة المالية</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                    <tr>
+                        <td>{{ reservation.reservation_number }}</td>
+                        <td>{{ reservation.customer_name }}</td>
+                        <td>{{ reservation.carpenter_name }}</td>
+                        <td>{% if reservation.concrete_type %}{{ reservation.concrete_type }}{% endif %}</td>
+                        <td>{% if reservation.concrete_quantity %}{{ reservation.concrete_quantity }} متر مكعب{% endif %}</td>
+                        <td>{% if reservation.price_per_unit %}{{ reservation.price_per_unit }} دولار أمريكي{% endif %}</td>
+                        <td>{% if reservation.discount %}{{ reservation.discount }} دولار أمريكي{% endif %}</td>
+                        <td>{% if reservation.payments %}{{ reservation.payments }} دولار أمريكي{% endif %}</td>
+                        <td>
+                            {% if reservation.remaining_balance > 0 %}
+                                <span class="badge bg-warning text-dark">متبقي {{ reservation.remaining_balance }} دولار</span>
+                            {% elif reservation.remaining_balance == 0 %}
+                                <span class="badge bg-success">مدفوع بالكامل</span>
+                            {% else %}
+                                <span class="badge bg-secondary">جاري انتظار</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if reservation.status == 'مقبول' %}
+                                <span class="badge bg-success">مقبول</span>
+                            {% elif reservation.status == 'مرفوض' %}
+                                <span class="badge bg-danger">مرفوض</span>
+                            {% elif reservation.status == 'مكتمل' %}
+                                <span class="badge bg-info text-dark">مكتمل</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">قيد الانتظار</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'update_financial_details' reservation.id %}" class="btn btn-primary btn-sm">تحديث</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="11" class="text-center">لا توجد حجوزات مكتملة.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>إجمالي التكلفة الإجمالية:</strong> {{ total_gross_amount_sum }} دولار أمريكي<br>
+        <strong>إجمالي الخصومات:</strong> {{ total_discount_sum }} دولار أمريكي<br>
+        <strong>إجمالي المدفوعات:</strong> {{ total_payments_sum }} دولار أمريكي<br>
+        <strong>إجمالي الرصيد المتبقي:</strong> {{ total_remaining_sum }} دولار أمريكي
+    </div>
+</div>
+{% endblock %}
